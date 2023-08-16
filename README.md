@@ -5,7 +5,9 @@ A pong clone. However, there is one visible difference from the regular pong - i
 * GNU GPL V2
 
 ## COMPILE TOOLS
-* SDL
+* yum install git gcc make libc-devel binutils watcom-wrc watcom-wlink-hll watcom-wipfc
+* yum install SDL2-devel SDL2_image-devel SDL2_mixer-devel SDL2_net-devel SDL2_ttf-devel libxml2-devel zlib-devel pthread-devel libcx-devel
+
  
 ## AUTHORS
 * Itay Kirshenbaum
