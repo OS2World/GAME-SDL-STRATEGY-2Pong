@@ -47,9 +47,10 @@ xmlNode* GetNode(xmlNode * a_node,char* name)
 					return cur_node;
 				}
 		}
-		GetNode(cur_node->children,name);
+		xmlNode *found = GetNode(cur_node->children,name);
+		if (found) return found;
 	}
-	//   return NULL;
+	return NULL;
 }
 
 void SubMenu(xmlNode *elem, char *name) {
@@ -111,7 +112,7 @@ xmlNode * ShowNode(xmlNode * a_node, char * name,SDL_Surface *screen, SDLFont *f
 		{
 			if (event.type == SDL_QUIT)  { return NULL; }
 
-			if (event.type == SDL_KEYDOWN)
+			if (event.type == SDL_KEYDOWN) {
 				if (event.key.keysym.sym == SDLK_ESCAPE) {
 					if (!strcmp(name,"main")) {
 						return NULL;
@@ -120,6 +121,11 @@ xmlNode * ShowNode(xmlNode * a_node, char * name,SDL_Surface *screen, SDLFont *f
 						done = 1;
 					}
 				}
+				if (event.key.keysym.sym == SDLK_RETURN &&
+				    (event.key.keysym.mod & KMOD_ALT)) {
+					SDL_WM_ToggleFullScreen(screen);
+				}
+			}
 			if (event.type == SDL_MOUSEBUTTONUP) {
 				if (mousehover)
 					return Nodes[mousehover];
@@ -176,12 +182,12 @@ optionsPtr ParseNode(xmlNode* cur) {
 
 int InitMenu(char *file, Game *game,Ball *balls, Paddle *paddles, Powerup *powerups, defines  def,CSpriteBase * powerup_sprite,Mix_Chunk *puk,Mix_Chunk *pluck) {
 	UDPsocket sock;
-	IPaddress address,aout;
+	IPaddress address;
 	int channel;
 	int port;
 	bool selected;
 	optionsPtr curoptions;
-	char * name;
+	char * name = (char *)"main";
 	xmlDoc *doc = NULL;
 	int init=1;
 	xmlNode *root_element = NULL, *wanted_node = NULL,*Selected_node = NULL;

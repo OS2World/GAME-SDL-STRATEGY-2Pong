@@ -4,7 +4,6 @@ void DrawScene(Game * game, Ball *balls, Paddle *paddles, Powerup *powerups, def
 {
 	int i;
 	SDL_Surface * screen = game->GetScreen();
-	SDLFont * font = game->GetFont();
 	InitBackground(screen);
 /*	for (i = 0; i < def.GetMaxBalls(); i++)
 		if (balls[i].GetShow())
@@ -49,7 +48,7 @@ void DrawResults(Game * game, Paddle *paddles, int i, int j)
 	drawString(screen,font,i+30,j,":");
 	(void) sprintf(str,"%d",paddles[1].GetPoints());
 	drawString(screen,font,i+50,j,str);
-	SDL_Rect rect={i,i,i+80,i+30};
+	SDL_Rect rect={(Sint16)i,(Sint16)i,(Uint16)(i+80),(Uint16)(i+30)};
 	AddRectList(game,rect);
 }
 

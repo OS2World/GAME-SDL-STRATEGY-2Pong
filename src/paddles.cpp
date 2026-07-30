@@ -10,8 +10,8 @@ void InitPaddles(Paddle *paddles, Ball *balls,int mode, defines def)
 }
 
 void ResetPaddles(Paddle *paddles, Ball *balls, int mode, defines def) {
-	rectangle r1={{(def.GetWindowWidth() - 20)+1,0},{def.GetWindowWidth(),def.GetWindowHeight()}};
-	rectangle r2={{0,0},{20-1,def.GetWindowHeight()}};
+	rectangle r1={{(float)((def.GetWindowWidth() - 20)+1),0.0f},{(float)def.GetWindowWidth(),(float)def.GetWindowHeight()}};
+	rectangle r2={{0.0f,0.0f},{19.0f,(float)def.GetWindowHeight()}};
 	paddles[0].set(20,200);
 	paddles[1].SetSize(13,80);
 	paddles[0].SetSize(13,80);

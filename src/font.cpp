@@ -151,7 +151,7 @@ void drawString(SDL_Surface *screen, SDLFont *font, int x, int y, char *str, ...
       xx+x,
       y,
     // For the width of the to-be-drawn character we take it's real width + 2
-      font->widths[string[i]]+2,
+      font->widths[(unsigned char)string[i]]+2,
     // And for the height we take the height of the character (height of the font/16)
       font->charWidth,
     // Now comes the tricky part
@@ -180,18 +180,18 @@ void drawString(SDL_Surface *screen, SDLFont *font, int x, int y, char *str, ...
     // of the cell to the number we got before. And the only thing left to do is to
     // subtract half of the character's real width and we get the x position from where
     // to draw our character on the font map :)
-      (string[i]%16*font->charWidth)+((font->charWidth/2)-(font->widths[string[i]])/2),
+      ((unsigned char)string[i]%16*font->charWidth)+((font->charWidth/2)-(font->widths[(unsigned char)string[i]])/2),
     // To get the row of the character in the image, we divide the ascii value of
     // the character by 16 and get rid of all the numbers after the point (.)
     // (if we get the number 7.125257.., we remove the .125157... and end up with 7)
     // We then multiply the result with the height of one cell and voila - we get
     // the y position!
-      (((int)string[i]/16)*font->charWidth)
+      (((int)(unsigned char)string[i]/16)*font->charWidth)
     );
 
     // Now we increase the xx printed string width counter by the width of the
     // drawn character
-    xx+=font->widths[string[i]];
+    xx+=font->widths[(unsigned char)string[i]];
   }
 }
 
@@ -211,7 +211,7 @@ int stringWidth(SDLFont *font,char *str,...)
   for(int i=0;i<len;i++)
   {
     // Add their widths together
-    xx+=font->widths[string[i]];
+    xx+=font->widths[(unsigned char)string[i]];
   }
 
   // and then return the sum

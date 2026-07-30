@@ -88,7 +88,7 @@ void object::Rotate() {
         yset(temp);
 }
 
-void object::SetVelocity(float x=NULL,float y=NULL)
+void object::SetVelocity(float x=0.0f,float y=0.0f)
 {
 	//if (x == NULL)
 			velocity.y = y;
@@ -140,22 +140,22 @@ rectangle object::GetRect()
 }
 
 rectangle defines::UpperBound() {
-	rectangle r1 = {{0,0},{windowwidth,5}};
+	rectangle r1 = {{0.0f,0.0f},{(float)windowwidth,5.0f}};
 	return r1;
 }
 
 rectangle defines::LowerBound() {
-	rectangle r2 = {{0,(windowheight - 5)},{windowwidth,windowheight}};
+	rectangle r2 = {{0.0f,(float)(windowheight - 5)},{(float)windowwidth,(float)windowheight}};
 	return r2;
 }
 
 rectangle defines::RightBound() {
-	rectangle r3 = {{(windowwidth - 5),0},{windowwidth,windowheight}};
+	rectangle r3 = {{(float)(windowwidth - 5),0.0f},{(float)windowwidth,(float)windowheight}};
 	return r3;
 }
 
 rectangle defines::LeftBound() {
-	rectangle r4 = {{0,0},{5,windowheight}};
+	rectangle r4 = {{0.0f,0.0f},{5.0f,(float)windowheight}};
 	return r4;
 }
 
@@ -171,8 +171,8 @@ defines::defines():
 	maxpowerups(6),
 	maxsprites((maxballs+maxpaddles+1)*2+10),
 	ballsize(15),
-	powerups(1),
 	windowheight(480),
-	windowwidth(640)
+	windowwidth(640),
+	powerups(1)
 {}
 

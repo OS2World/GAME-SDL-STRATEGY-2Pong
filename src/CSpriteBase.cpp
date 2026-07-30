@@ -34,7 +34,7 @@ int CSpriteBase::init(char *dir)
     if(buffer[0] != '#' && buffer[0] != '\r' && buffer[0] != '\0' && buffer[0] != '\n' && strlen(buffer) != 0)
     {
       sscanf(buffer, "%s %d %d %d %d", name, &pause, &r, &g, &b);
-      sprintf(filename, "%s/%s", dir, name);
+      snprintf(filename, 255, "%s/%s", dir, name);
       SDL_Surface *temp;
       if((temp = SDL_LoadBMP(filename)) == NULL) return -1;
       if(r >= 0) SDL_SetColorKey(temp, SDL_SRCCOLORKEY, SDL_MapRGB(temp->format, r, g, b));
@@ -42,7 +42,8 @@ int CSpriteBase::init(char *dir)
       SDL_FreeSurface(temp);
 
       mAnim[count].pause = pause;
-      if(!mW) mW = mAnim[count].image->w; if(!mH) mH = mAnim[count].image->w;
+      if(!mW) mW = mAnim[count].image->w;
+      if(!mH) mH = mAnim[count].image->w;
 
       count++;
     }

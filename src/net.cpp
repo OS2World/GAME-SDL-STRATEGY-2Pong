@@ -36,7 +36,6 @@ void ParseNetData(Game *game,Ball * balls, Paddle * paddles, Uint8 * data) {
 }
 
 void UpdateClient(Game *game,Ball * balls, Paddle * paddles, UDPsocket sock, int channel) {
-	int num;
 	UDPpacket *out;
 	out=SDLNet_AllocPacket(20);
 	out->len=17;
@@ -181,7 +180,7 @@ IPaddress GetAddress(SDL_Surface * screen, SDLFont * font) {
 					str[len]=event.key.keysym.sym;
 					len++;
 				}
-				else if (event.key.keysym.sym == SDLK_SEMICOLON && (KMOD_RSHIFT || KMOD_LSHIFT)) {
+				else if (event.key.keysym.sym == SDLK_SEMICOLON && (event.key.keysym.mod & (KMOD_RSHIFT | KMOD_LSHIFT))) {
 					str[len]=58;
 					len++;
 				}
@@ -221,8 +220,8 @@ IPaddress GetAddress(SDL_Surface * screen, SDLFont * font) {
 
 int GetPort(SDL_Surface * screen, SDLFont * font, int server) {
 	int done=0;
-	long old=0,port=0;
-	char str[5];
+	int old=0,port=0;
+	char str[12];
 	InitBackground(screen);
 	if (!server) drawString(screen,font,60,10,"Enter Your Port (0 for random):");
 	else drawString(screen,font,60,10,"Enter Your Port:");
@@ -250,7 +249,7 @@ int GetPort(SDL_Surface * screen, SDLFont * font, int server) {
 				if (port > 65535) port = 65535;
 				if (old!=port) {
 					InitBackground(screen);
-					(void) sprintf(str,"%ld",port);
+					(void) sprintf(str,"%d",port);
 					if (!server) drawString(screen,font,60,10,"Enter Your Port (0 for random):");
 					else drawString(screen,font,60,10,"Enter Your Port:");
 					drawString(screen,font,90,60,str);

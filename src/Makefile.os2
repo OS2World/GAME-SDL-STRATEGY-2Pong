@@ -1,0 +1,55 @@
+# Makefile.os2 -- 2Pong, GCC 9.2 / kLIBC / SDL 1.2 (ArcaOS)
+#
+# Requires (all from ArcaOS RPM repository):
+#   SDL 1.2  - SDL_dll.a   + SDL.dll
+#   SDL_mixer - SDL_mixer_dll.a + SDL_mixer.dll
+#   SDL_net  - SDL_net_dll.a  + SDL_net.dll
+#   libxml2  - xml2_dll.a   + xml2.dll
+#
+# Run from 2Pong-Source\ via compile-2pong.cmd
+
+CXX = g++
+
+SDL_INC  = $(UNIXROOT)/usr/include
+SDL_LIB  = $(UNIXROOT)/usr/lib
+XML_INC  = $(UNIXROOT)/usr/include/libxml2
+
+# -I$(SDL_INC)     makes <SDL/SDL.h> resolve to .../include/SDL/SDL.h
+# -I$(XML_INC)     makes <libxml/tree.h> resolve to .../libxml2/libxml/tree.h
+CXXFLAGS = -O2 -Zomf \
+	-I. -I$(SDL_INC) -I$(SDL_INC)/SDL -I$(XML_INC) \
+	-Wall -W \
+	-Wno-unused-parameter \
+	-Wno-write-strings \
+	-Wno-unused-but-set-variable \
+	-fno-exceptions
+
+LDFLAGS = -Zomf -Zstack 512 -Zmt
+
+EXE = ../2pong.exe
+
+SOURCES = defs.cpp CSpriteBase.cpp CSprite.cpp font.cpp ai.cpp physics.cpp \
+	net.cpp menu.cpp draw.cpp powerups.cpp balls.cpp paddles.cpp \
+	game.cpp main.cpp
+
+OBJECTS = $(SOURCES:.cpp=.o)
+
+.DEFAULT_GOAL := all
+
+.PHONY: all clean
+
+all: $(EXE)
+
+$(EXE): $(OBJECTS)
+	g++ $(LDFLAGS) -o $@ 2pong.def $(OBJECTS) \
+		$(SDL_LIB)/SDL_dll.a \
+		$(SDL_LIB)/sdlmixer.lib \
+		$(SDL_LIB)/sdlnet.lib \
+		$(SDL_LIB)/xml2_dll.a
+
+clean:
+	-del *.o 2>NUL
+	-del ..\2pong.exe 2>NUL
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -o $@ -c $<

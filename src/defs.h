@@ -225,10 +225,10 @@ public:
 
 	bool GetPowerups() { return powerups; }
 	void SetPowerups(bool x) { powerups=x; }
-	rectangle defines::UpperBound();
-	rectangle defines::LowerBound();
-	rectangle defines::RightBound();
-	rectangle defines::LeftBound();
+	rectangle UpperBound();
+	rectangle LowerBound();
+	rectangle RightBound();
+	rectangle LeftBound();
 
 private:
 	int maxballs;

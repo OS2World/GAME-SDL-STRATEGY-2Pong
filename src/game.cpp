@@ -13,7 +13,7 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 	int done=0,state=0;
 	int mx,my,myold=0,mspeed;
 	int update=0;
-	UDPpacket *in,*out;
+	UDPpacket *in = NULL,*out = NULL;
 	int numrecv=0;
 	if (net) {
 		if (net==1) {
@@ -37,7 +37,7 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 		{
 			if (event.type == SDL_QUIT)  { done = 1; }
 
-			if (event.type == SDL_KEYDOWN)
+			if (event.type == SDL_KEYDOWN) {
 				if (event.key.keysym.sym == SDLK_ESCAPE) {
 					if (net) {
 						SDLNet_FreePacket(out);
@@ -49,6 +49,11 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 					game->SetBegin(0);
 					done=1;
 				}
+				if (event.key.keysym.sym == SDLK_RETURN &&
+				    (event.key.keysym.mod & KMOD_ALT)) {
+					SDL_WM_ToggleFullScreen(game->GetScreen());
+				}
+			}
 		}
 
 		if (!game->GetEnd())
@@ -253,6 +258,7 @@ int CheckState(Game *game, Ball *balls, Paddle *paddles, defines def)
 					return 2;
 		return 0;
 	}
+	return 0;
 }
 
 void UpdateScene(Game * game, Ball *balls, Paddle *paddles, Powerup *powerups, int difficulty, int mode, defines def,CSpriteBase * powerup_sprite,Mix_Chunk *puk,Mix_Chunk *pluck) {
