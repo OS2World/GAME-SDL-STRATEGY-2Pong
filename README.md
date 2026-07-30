@@ -45,31 +45,17 @@ The following packages must be installed from the ArcaOS RPM repository (ANPM):
 
 | Package | Library used |
 |---------|--------------|
-| SDL 1.2 | `SDL.dll` |
-| SDL_mixer | `SDL_mixer.dll` |
-| SDL_net | `SDL_net.dll` |
+| SDL2 | `SDL2.dll` |
+| SDL2_mixer | `SDL2_mixer.dll` |
+| SDL2_net | `SDL2_net.dll` |
 | libxml2 | `xml2.dll` |
 
 Build tools required:
 
 - GCC 9.2 / kLIBC (from ArcaOS RPM)
 - GNU Make
-- GNU sed (for the one-time SDL header patch)
 
 ## Building from Source
-
-### Step 1 — Patch the SDL header (run once)
-
-There is a type conflict between `SDL_config_os2.h` and the kLIBC `sys/types.h`
-for `uintptr_t`. The included script patches the SDL header to resolve it:
-
-```
-patch-sdl.cmd
-```
-
-Check `patch-sdl.log` to confirm the patch succeeded. This only needs to be run once per installation.
-
-### Step 2 — Build
 
 From the `2Pong-Source\` directory:
 
@@ -93,8 +79,9 @@ compile-2pong.cmd
 |------|---------|
 | `src/Makefile.os2` | OS/2 Makefile for GCC 9.2 / kLIBC / WLINK |
 | `src/2pong.def` | Module definition file (BLDLEVEL, WINDOWAPI subsystem) |
+| `src/SDL_mixer_compat.h` | Redirects `Mix_PlayChannel` away from unexported `Mix_PlayChannelTimed` |
+| `src/sdl2mix_compat.cpp` | Stub implementation for `mix_play_compat` |
 | `compile-2pong.cmd` | Wrapper that sets linker environment and calls make |
-| `patch-sdl.cmd` | One-time SDL header patch |
 
 
 ## Running
@@ -114,19 +101,47 @@ Or directly:
 
 ## OS/2 Port Notes
 
-The port targets ArcaOS with GCC 9.2 / kLIBC and SDL 1.2. Changes made to the
+The port targets ArcaOS with GCC 9.2 / kLIBC and SDL2. Changes made to the
 original source:
 
+**SDL 1.2 → SDL2 migration**
+
+- Replaced `SDL_SetVideoMode` with `SDL_CreateWindow` + `SDL_GetWindowSurface`.
+- All rendering targets a fixed-size virtual surface (`SDL_CreateRGBSurface`);
+  `PresentScreen()` scales it to the window via `SDL_BlitScaled`, providing
+  correct letterboxed fullscreen without requiring a display-mode change.
+- `SDL_WINDOW_FULLSCREEN_DESKTOP` used for fullscreen toggle (Alt+Enter); the
+  OS/2 DIVE driver does not support display-mode switching.
+- Mouse coordinates translated from window space to game space via
+  `WindowToGameCoords()` so menus remain clickable in fullscreen.
+- `SDL_Flip` / `SDL_UpdateRects` replaced by `PresentScreen()` throughout.
+- `SDL_DisplayFormat` / `SDL_DisplayFormatAlpha` replaced by
+  `SDL_ConvertSurfaceFormat(..., SDL_PIXELFORMAT_ARGB8888, 0)`.
+- `SDL_GetKeyState` replaced by `SDL_GetKeyboardState`; all `SDLK_*` arrow and
+  space constants replaced by `SDL_SCANCODE_*` equivalents.
+- `SDL_WM_SetCaption` / `SDL_WM_SetIcon` replaced by `SDL_SetWindowTitle` /
+  `SDL_SetWindowIcon`.
+- `SDL_SRCCOLORKEY` flag replaced by `SDL_TRUE`.
+
+**OS/2 SDL2_mixer workaround**
+
+- The OS/2 SDL2_mixer build (2021) does not export `Mix_PlayChannelTimed`.
+  Because the SDL2 header defines `Mix_PlayChannel` as a macro expanding to
+  `Mix_PlayChannelTimed`, any call generates an unresolved IMPDEF reference.
+  `SDL_mixer_compat.h` `#undef`s the macro and replaces it with a local stub
+  (`mix_play_compat`), which satisfies the linker without requiring the missing
+  export. Sound effects are currently silent as a result.
+
+**Bug fixes carried from the SDL1 port**
+
 - Fixed a crash in `GetNode()` (`menu.cpp`) where the recursive return value was
-  discarded and `return NULL` was commented out, causing a NULL pointer dereference
-  when walking the XML menu tree.
+  discarded, causing a NULL pointer dereference when walking the XML menu tree.
 - Fixed a logic bug in `net.cpp`: `(KMOD_RSHIFT || KMOD_LSHIFT)` was always `true`
   (non-zero constants); corrected to `(event.key.keysym.mod & (KMOD_RSHIFT | KMOD_LSHIFT))`.
 - Fixed a missing-braces bug in `game.cpp` that caused the `SDLK_p` key check to
   execute on any event type, not only `SDL_KEYDOWN`.
-- Resolved a `uintptr_t` redefinition conflict between `SDL_config_os2.h` and
-  kLIBC `sys/types.h` via `patch-sdl.cmd`.
-- Added Alt+Enter fullscreen toggle.
+- Fixed paddle speed spike on game start: `myold` now initialised from the actual
+  mouse position before the game loop, preventing a large first-frame delta.
 - Added BLDLEVEL metadata via `2pong.def`.
 - Fixed numerous compiler warnings (narrowing conversions, uninitialized variables,
   char-subscript issues, sprintf buffer sizes, member init order).

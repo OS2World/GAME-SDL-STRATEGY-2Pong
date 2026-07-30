@@ -13,7 +13,7 @@
 #ifndef __CSPRITE_H__
 #define __CSPRITE_H__
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "CSpriteBase.h"
 

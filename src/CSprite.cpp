@@ -30,7 +30,7 @@ int CSprite::init(CSpriteBase *base, SDL_Surface *screen)
   if(mSpriteBase->mBuilt)
   {
     if(mSpriteBase->mNumframes>1) mAnimating=1;
-    mBackreplacement = SDL_DisplayFormat(mSpriteBase->mAnim[0].image);
+    mBackreplacement = SDL_ConvertSurfaceFormat(mSpriteBase->mAnim[0].image, SDL_PIXELFORMAT_ARGB8888, 0);
   }
   mScreen = screen;
   return 0;

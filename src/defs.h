@@ -1,7 +1,7 @@
 #ifndef __DEFS_H__
 #define __DEFS_H__
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include <time.h>
 #include "CSprite.h"
 #include <stdlib.h>
@@ -136,6 +136,9 @@ public:
 	SDL_Surface * GetScreen() { return screen; }
 	void SetScreen(SDL_Surface * Screen) { screen = Screen; }
 
+	SDL_Window * GetWindow() { return window; }
+	void SetWindow(SDL_Window * Window) { window = Window; }
+
 	SDLFont * GetFont() { return font; }
 	void SetFont(SDLFont * Font) { font = Font; }
 
@@ -154,6 +157,7 @@ public:
 	int difficulty;
 	bool net;
 	SDL_Surface * screen;
+	SDL_Window * window;
 	SDLFont * font;
 	SDL_Rect rectlist[30];
 	int numrects;

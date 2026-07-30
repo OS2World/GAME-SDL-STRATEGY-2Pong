@@ -4,7 +4,7 @@
 #include "defs.h"
 #include "draw.h"
 #include "physics.h"
-#include <SDL/SDL_mixer.h>
+#include "SDL_mixer_compat.h"
 
 void InitBalls(Ball *balls,int mode, int difficulty, defines def);
 void ResetBallsKickups(Ball *balls, int difficulty, defines def);

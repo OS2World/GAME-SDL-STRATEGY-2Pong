@@ -2,7 +2,7 @@
 #define __NET_H__
 #include "defs.h"
 #include "draw.h"
-#include <SDL/SDL_net.h>
+#include <SDL2/SDL_net.h>
 
 #ifndef htons
 #define htons(A)  ((((Uint16)(A) & 0xff00) >> 8) | \
@@ -25,7 +25,7 @@ void ParseNetData(Game *game,Ball * balls, Paddle * paddles, Uint8 * data);
 void UpdateClient(Game * game, Ball * balls, Paddle * paddles, UDPsocket sock, int channel);
 int StartServer(UDPsocket *sock, IPaddress *address, int *channel, int port);
 int StartClient(UDPsocket *sock, IPaddress address, int *channel, int myport);
-IPaddress GetAddress(SDL_Surface * screen, SDLFont * font);
-int GetPort(SDL_Surface * screen, SDLFont * font, int server);
+IPaddress GetAddress(Game *game);
+int GetPort(Game *game, int server);
 
 #endif

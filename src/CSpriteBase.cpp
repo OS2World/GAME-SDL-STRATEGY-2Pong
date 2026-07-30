@@ -8,7 +8,7 @@ void CSpriteBase::destroy() {
 int CSpriteBase::init(char *dir)
 {
   char buffer[255];
-  char filename[255];
+  char filename[512];
   char name[255];
   int pause=0, r=0, g=0, b=0;
   FILE *fp;
@@ -34,11 +34,11 @@ int CSpriteBase::init(char *dir)
     if(buffer[0] != '#' && buffer[0] != '\r' && buffer[0] != '\0' && buffer[0] != '\n' && strlen(buffer) != 0)
     {
       sscanf(buffer, "%s %d %d %d %d", name, &pause, &r, &g, &b);
-      snprintf(filename, 255, "%s/%s", dir, name);
+      snprintf(filename, sizeof(filename), "%s/%s", dir, name);
       SDL_Surface *temp;
       if((temp = SDL_LoadBMP(filename)) == NULL) return -1;
-      if(r >= 0) SDL_SetColorKey(temp, SDL_SRCCOLORKEY, SDL_MapRGB(temp->format, r, g, b));
-      mAnim[count].image = SDL_DisplayFormat(temp);
+      if(r >= 0) SDL_SetColorKey(temp, SDL_TRUE, SDL_MapRGB(temp->format, r, g, b));
+      mAnim[count].image = SDL_ConvertSurfaceFormat(temp, SDL_PIXELFORMAT_ARGB8888, 0);
       SDL_FreeSurface(temp);
 
       mAnim[count].pause = pause;

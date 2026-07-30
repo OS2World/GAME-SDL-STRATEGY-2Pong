@@ -15,7 +15,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "font.h"
 
@@ -95,7 +95,7 @@ SDLFont *initFont(char *fontdir, float r, float g, float b, float a)
   #endif
   tempSurface = SDL_CreateRGBSurfaceFrom(tempFont->data, width, width,
                               32, width*4, rmask, gmask, bmask, amask);
-  tempFont->font = SDL_DisplayFormatAlpha(tempSurface);
+  tempFont->font = SDL_ConvertSurfaceFormat(tempSurface, SDL_PIXELFORMAT_ARGB8888, 0);
   SDL_FreeSurface(tempSurface);
 
   // let's create a variable to hold all the widths of the font

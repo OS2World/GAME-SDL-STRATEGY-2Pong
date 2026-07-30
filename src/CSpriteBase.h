@@ -1,7 +1,7 @@
 #ifndef __CSPRITEBASE_H__
 #define __CSPRITEBASE_H__
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 struct CSpriteFrame
 {

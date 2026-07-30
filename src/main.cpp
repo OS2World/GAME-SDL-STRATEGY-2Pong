@@ -96,18 +96,27 @@ printf("Warning: Couldn't set 44100 Hz 16-bit audio\n- Reason: %s\n",
 
 	Game game;
 	game.SetLimit(5);
-	SDL_WM_SetIcon(SDL_LoadBMP("icon.bmp"),NULL);
-	SDL_WM_SetCaption("2Pong [1.0a]","2Pong [1.0a]");
-	SDL_Surface * screen;
-//For Linux
-//	screen = SDL_SetVideoMode(def.GetWindowWidth(),def.GetWindowHeight(),32,SDL_SWSURFACE);
-//For Windows
-	screen = SDL_SetVideoMode(def.GetWindowWidth(),def.GetWindowHeight(),32,SDL_HWSURFACE|SDL_DOUBLEBUF);
-	if ( screen == NULL )
+	SDL_Window * window;
+	window = SDL_CreateWindow("2Pong [1.0.1a]",
+	    SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+	    def.GetWindowWidth(), def.GetWindowHeight(), 0);
+	if ( window == NULL )
 	{
-		printf("Unable to set %dx%d video: %s\n", def.GetWindowWidth(),def.GetWindowHeight(),SDL_GetError());
+		printf("Unable to create window: %s\n", SDL_GetError());
 		exit(1);
 	}
+	SDL_Surface * wsurf = SDL_GetWindowSurface(window);
+	SDL_Surface * screen = SDL_CreateRGBSurface(0,
+		def.GetWindowWidth(), def.GetWindowHeight(),
+		wsurf->format->BitsPerPixel,
+		wsurf->format->Rmask, wsurf->format->Gmask,
+		wsurf->format->Bmask, wsurf->format->Amask);
+	if (!screen) {
+		printf("Unable to create virtual surface: %s\n", SDL_GetError());
+		exit(1);
+	}
+	SDL_SetWindowIcon(window, SDL_LoadBMP("icon.bmp"));
+	game.SetWindow(window);
 	Ball balls[MAX];
 	Paddle paddles[MAX];
 	Powerup powerups[MAX];
@@ -125,5 +134,6 @@ printf("Warning: Couldn't set 44100 Hz 16-bit audio\n- Reason: %s\n",
 	Mix_FreeChunk(puk);
 	Mix_FreeChunk(pluck);
 	FreeStuff(screen,balls,paddles, powerup_sprite,powerups, def);
+	SDL_DestroyWindow(window);
 	return(0);
 }

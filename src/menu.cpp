@@ -60,7 +60,9 @@ void SubMenu(xmlNode *elem, char *name) {
 
 }
 
-void DrawMenu(xmlNode *Nodes[10],int hover, int n, SDL_Surface *screen, SDLFont * font) {
+void DrawMenu(xmlNode *Nodes[10],int hover, int n, Game *game) {
+	SDL_Surface *screen = game->GetScreen();
+	SDLFont *font = game->GetFont();
 	char * str;
 	SDL_FillRect(screen,NULL,0x000000);
 	drawString(screen,font,60,10,GetNodeValue(Nodes[0],"title"));
@@ -83,10 +85,13 @@ void DrawMenu(xmlNode *Nodes[10],int hover, int n, SDL_Surface *screen, SDLFont 
 			}
 		}
 	}
-	SDL_Flip(screen);
+	PresentScreen(game);
 }
 
-xmlNode * ShowNode(xmlNode * a_node, char * name,SDL_Surface *screen, SDLFont *font) {
+xmlNode * ShowNode(xmlNode * a_node, char * name, Game *game) {
+	SDL_Surface *screen = game->GetScreen();
+	SDLFont *font = game->GetFont();
+	SDL_Window *window = game->GetWindow();
 	xmlNode *cur_node = NULL;
 	xmlNode *Nodes[10];
 	int x=0,y=0,n=1,done=0,i=0,mousehover=0;
@@ -105,7 +110,7 @@ xmlNode * ShowNode(xmlNode * a_node, char * name,SDL_Surface *screen, SDLFont *f
 			}
 		}
 	}
-	SDL_Flip(screen);
+	SDL_UpdateWindowSurface(window);
 	while (!done) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -123,7 +128,9 @@ xmlNode * ShowNode(xmlNode * a_node, char * name,SDL_Surface *screen, SDLFont *f
 				}
 				if (event.key.keysym.sym == SDLK_RETURN &&
 				    (event.key.keysym.mod & KMOD_ALT)) {
-					SDL_WM_ToggleFullScreen(screen);
+					Uint32 wflags = SDL_GetWindowFlags(window);
+					SDL_SetWindowFullscreen(window,
+					    (wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
 				}
 			}
 			if (event.type == SDL_MOUSEBUTTONUP) {
@@ -131,17 +138,19 @@ xmlNode * ShowNode(xmlNode * a_node, char * name,SDL_Surface *screen, SDLFont *f
 					return Nodes[mousehover];
 			}
 		}
-		SDL_GetMouseState(&x, &y);
+		int wx, wy;
+		SDL_GetMouseState(&wx, &wy);
+		WindowToGameCoords(game, wx, wy, &x, &y);
 		if (x > 90 && x < 300 && y > 60 && y < 20+(n+1)*40) {
 			i=(int)(y-20)/40 - 1;
 			if (i != mousehover) {
-				DrawMenu(Nodes,i,n,screen,font);
+				DrawMenu(Nodes,i,n,game);
 			}
 			mousehover=i;
 		}
 		else {
 			if (mousehover)
-				DrawMenu(Nodes,0,n,screen,font);
+				DrawMenu(Nodes,0,n,game);
 			mousehover=0;
 		}
 		SDL_Delay(25);
@@ -200,7 +209,7 @@ int InitMenu(char *file, Game *game,Ball *balls, Paddle *paddles, Powerup *power
 	while (wanted_node) {
 		if (!strcmp((char*)wanted_node->name,"menu")) {
 			selected=1;
-			Selected_node=ShowNode(wanted_node,name,game->GetScreen(),game->GetFont());
+			Selected_node=ShowNode(wanted_node,name,game);
 		}
 		else {
 			selected=0;
@@ -224,11 +233,11 @@ int InitMenu(char *file, Game *game,Ball *balls, Paddle *paddles, Powerup *power
 				paddles[0].SetType(Net);
 				paddles[1].SetType(Human);
 				paddles[1].SetControl(Keyboard);
-				port = GetPort(game->GetScreen(),game->GetFont(),1);
+				port = GetPort(game,1);
 				if (port>0) {
 					InitBackground(game->GetScreen());
 					drawString(game->GetScreen(),game->GetFont(),60,10,"Waiting For Connection ...");
-					SDL_Flip(game->GetScreen());
+					PresentScreen(game);
 					if (!StartServer(&sock,&address,&channel,port)) {
 						GameMain(game,init,balls,paddles,powerups,def,powerup_sprite,puk,pluck,address,sock,channel,1);
 					}
@@ -248,12 +257,12 @@ int InitMenu(char *file, Game *game,Ball *balls, Paddle *paddles, Powerup *power
 				paddles[0].SetType(Human);
 				paddles[1].SetType(Net);
 				paddles[0].SetControl(Keyboard);
-				port = GetPort(game->GetScreen(),game->GetFont(),0);
-				if (port >= 0) { 
-					address = GetAddress(game->GetScreen(),game->GetFont());
+				port = GetPort(game,0);
+				if (port >= 0) {
+					address = GetAddress(game);
 					InitBackground(game->GetScreen());
 					drawString(game->GetScreen(),game->GetFont(),60,10,"Connecting ...");
-					SDL_Flip(game->GetScreen());
+					PresentScreen(game);
 					StartClient(&sock,address,&channel,port);
 					GameMain(game,init,balls,paddles,powerups,def,powerup_sprite,puk,pluck,address,sock,channel,2);
 					SDLNet_UDP_Unbind(sock, channel);
@@ -315,7 +324,7 @@ int InitMenu(char *file, Game *game,Ball *balls, Paddle *paddles, Powerup *power
 				DrawScene(game,balls,paddles,powerups,def);
 				drawString(game->GetScreen(),game->GetFont(),450-
 					stringWidth(game->GetFont(),"Press space to continue"),200-30,"Press space to continue");
-				SDL_Flip(game->GetScreen());
+				PresentScreen(game);
 				wanted_node=GetPlayNode(root_element,"regular","easy");
 			}
 		}

@@ -34,32 +34,21 @@ Requirements
 The following libraries must be installed on your OS/2 or ArcaOS system.
 Use ANPM (ArcaOS Package Manager) or the yum command line tool.
 
-  SDL 1.2
-    yum install SDL
+  SDL2
+    yum install SDL2
 
-  SDL_mixer (music and sound effects)
-    yum install SDL_mixer
+  SDL2_mixer (music and sound effects)
+    yum install SDL2_mixer
 
-  SDL_net (network game support)
-    yum install SDL_net
+  SDL2_net (network game support)
+    yum install SDL2_net
 
   libxml2 (menu configuration)
     yum install libxml2
 
 To install all at once:
 
-    yum install SDL SDL_mixer SDL_net libxml2
-
-
-First-time Setup
-----------------
-Before running 2Pong for the first time, run the SDL header patch script
-to fix a type conflict between SDL 1.2 and the kLIBC headers:
-
-    patch-sdl.cmd
-
-This only needs to be done once per installation.  Check patch-sdl.log
-to confirm it completed successfully.
+    yum install SDL2 SDL2_mixer SDL2_net libxml2
 
 
 Running

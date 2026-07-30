@@ -1,11 +1,12 @@
-# Makefile.os2 -- 2Pong, GCC 9.2 / kLIBC / SDL 1.2 (ArcaOS)
+# Makefile.os2 -- 2Pong, GCC 9.2 / kLIBC / SDL2 (ArcaOS)
 #
 # Requires (all from ArcaOS RPM repository):
-#   SDL 1.2  - SDL_dll.a   + SDL.dll
-#   SDL_mixer - SDL_mixer_dll.a + SDL_mixer.dll
-#   SDL_net  - SDL_net_dll.a  + SDL_net.dll
-#   libxml2  - xml2_dll.a   + xml2.dll
+#   SDL2     - SDL2_dll.a   + SDL2.dll      (yum install SDL2-devel)
+#   SDL2_mixer - SDL2_mixer_dll.a           (yum install SDL2_mixer-devel)
+#   SDL2_net - SDL2_net_dll.a               (yum install SDL2_net-devel)
+#   libxml2  - xml2_dll.a   + xml2.dll      (yum install libxml2-devel)
 #
+# Note: adjust library names below if your ArcaOS RPM uses different filenames
 # Run from 2Pong-Source\ via compile-2pong.cmd
 
 CXX = g++
@@ -14,15 +15,19 @@ SDL_INC  = $(UNIXROOT)/usr/include
 SDL_LIB  = $(UNIXROOT)/usr/lib
 XML_INC  = $(UNIXROOT)/usr/include/libxml2
 
-# -I$(SDL_INC)     makes <SDL/SDL.h> resolve to .../include/SDL/SDL.h
+# -I$(SDL_INC)     makes <SDL2/SDL.h> resolve to .../include/SDL2/SDL.h
 # -I$(XML_INC)     makes <libxml/tree.h> resolve to .../libxml2/libxml/tree.h
 CXXFLAGS = -O2 -Zomf \
-	-I. -I$(SDL_INC) -I$(SDL_INC)/SDL -I$(XML_INC) \
+	-I. -I$(SDL_INC) -I$(XML_INC) \
 	-Wall -W \
 	-Wno-unused-parameter \
 	-Wno-write-strings \
 	-Wno-unused-but-set-variable \
-	-fno-exceptions
+	-fno-exceptions \
+	-MMD -MP
+
+DEPS = $(SOURCES:.cpp=.d)
+-include $(DEPS)
 
 LDFLAGS = -Zomf -Zstack 512 -Zmt
 
@@ -30,7 +35,7 @@ EXE = ../2pong.exe
 
 SOURCES = defs.cpp CSpriteBase.cpp CSprite.cpp font.cpp ai.cpp physics.cpp \
 	net.cpp menu.cpp draw.cpp powerups.cpp balls.cpp paddles.cpp \
-	game.cpp main.cpp
+	game.cpp main.cpp sdl2mix_compat.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
@@ -42,13 +47,14 @@ all: $(EXE)
 
 $(EXE): $(OBJECTS)
 	g++ $(LDFLAGS) -o $@ 2pong.def $(OBJECTS) \
-		$(SDL_LIB)/SDL_dll.a \
-		$(SDL_LIB)/sdlmixer.lib \
-		$(SDL_LIB)/sdlnet.lib \
+		$(SDL_LIB)/SDL2_dll.a \
+		$(SDL_LIB)/SDL2_mixer_dll.a \
+		$(SDL_LIB)/SDL2_net_dll.a \
 		$(SDL_LIB)/xml2_dll.a
 
 clean:
 	-del *.o 2>NUL
+	-del *.d 2>NUL
 	-del ..\2pong.exe 2>NUL
 
 %.o: %.cpp

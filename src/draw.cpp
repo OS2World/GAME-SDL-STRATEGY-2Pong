@@ -35,7 +35,7 @@ void DrawScene(Game * game, Ball *balls, Paddle *paddles, Powerup *powerups, def
 //For Windows
 //      SDL_Flip(screen);
 //For Linux
-	SDL_UpdateRects(screen, game->GetRectNum(), game->GetRectList());
+	PresentScreen(game);
 }
 
 void DrawResults(Game * game, Paddle *paddles, int i, int j)
@@ -48,7 +48,7 @@ void DrawResults(Game * game, Paddle *paddles, int i, int j)
 	drawString(screen,font,i+30,j,":");
 	(void) sprintf(str,"%d",paddles[1].GetPoints());
 	drawString(screen,font,i+50,j,str);
-	SDL_Rect rect={(Sint16)i,(Sint16)i,(Uint16)(i+80),(Uint16)(i+30)};
+	SDL_Rect rect={i,i,i+80,i+30};
 	AddRectList(game,rect);
 }
 
@@ -56,7 +56,7 @@ SDL_Surface * ImageLoad(char *file)
 {
 	SDL_Surface *temp1, *temp2;
 	temp1 = SDL_LoadBMP(file);
-	temp2 = SDL_DisplayFormat(temp1);
+	temp2 = SDL_ConvertSurfaceFormat(temp1, SDL_PIXELFORMAT_ARGB8888, 0);
 	SDL_FreeSurface(temp1);
 	return temp2;
 }
@@ -85,8 +85,46 @@ void AddRectList(Game * game, SDL_Rect rect)
 	game->SetRectNum(game->GetRectNum() + 1);
 }
 void InitBackground(SDL_Surface * screen)
-{	
+{
 	SDL_FillRect(screen,NULL,0x000000);
-//      SDL_Flip(screen);
+}
+
+void WindowToGameCoords(Game *game, int wx, int wy, int *gx, int *gy)
+{
+	SDL_Surface *dst = SDL_GetWindowSurface(game->GetWindow());
+	SDL_Surface *src = game->GetScreen();
+	if (dst->w != src->w || dst->h != src->h) {
+		float sx = (float)dst->w / src->w;
+		float sy = (float)dst->h / src->h;
+		float scale = (sx < sy) ? sx : sy;
+		int ox = (dst->w - (int)(src->w * scale)) / 2;
+		int oy = (dst->h - (int)(src->h * scale)) / 2;
+		*gx = (int)((wx - ox) / scale);
+		*gy = (int)((wy - oy) / scale);
+	} else {
+		*gx = wx;
+		*gy = wy;
+	}
+}
+
+void PresentScreen(Game *game)
+{
+	SDL_Surface *dst = SDL_GetWindowSurface(game->GetWindow());
+	SDL_Surface *src = game->GetScreen();
+	if (dst->w != src->w || dst->h != src->h) {
+		float sx = (float)dst->w / src->w;
+		float sy = (float)dst->h / src->h;
+		float scale = (sx < sy) ? sx : sy;
+		SDL_Rect r;
+		r.w = (int)(src->w * scale);
+		r.h = (int)(src->h * scale);
+		r.x = (dst->w - r.w) / 2;
+		r.y = (dst->h - r.h) / 2;
+		SDL_FillRect(dst, NULL, 0);
+		SDL_BlitScaled(src, NULL, dst, &r);
+	} else {
+		SDL_BlitSurface(src, NULL, dst, NULL);
+	}
+	SDL_UpdateWindowSurface(game->GetWindow());
 }
 

@@ -25,7 +25,7 @@ void ParseNetData(Game *game,Ball * balls, Paddle * paddles, Uint8 * data) {
 	paddles[1].SetPoints(data[10]);
 	if (!game->GetBegin() && data[11]) {
 		InitBackground(game->GetScreen());
-		SDL_Flip(game->GetScreen());
+		PresentScreen(game);
 	}
 	game->SetBegin(data[11]);
 	game->SetLose(data[12]);
@@ -152,8 +152,10 @@ int StartClient(UDPsocket *sock, IPaddress address, int *channel, int myport) {
 	return 0;
 }
 
-IPaddress GetAddress(SDL_Surface * screen, SDLFont * font) {
-	IPaddress ip; 
+IPaddress GetAddress(Game *game) {
+	SDL_Surface *screen = game->GetScreen();
+	SDLFont *font = game->GetFont();
+	IPaddress ip;
 	SDLNet_ResolveHost(&ip, NULL, 1111);
 	int done=0,i;
 	int len=0,old;
@@ -162,7 +164,7 @@ IPaddress GetAddress(SDL_Surface * screen, SDLFont * font) {
 	long port=0;
 	InitBackground(screen);
 	drawString(screen,font,60,10,"Enter Host Address:Port");
-	SDL_Flip(screen);
+	PresentScreen(game);
 	for (i=0;i<101;i++)
 		str[i]=0;
 	while (!done) {
@@ -173,7 +175,7 @@ IPaddress GetAddress(SDL_Surface * screen, SDLFont * font) {
 				old = len;
 				if (event.key.keysym.sym == SDLK_ESCAPE) { return ip; }
 				else if (event.key.keysym.sym == SDLK_RETURN) { done=1; }
-				else if ((event.key.keysym.sym <= 57 && event.key.keysym.sym >= 48) || 
+				else if ((event.key.keysym.sym <= 57 && event.key.keysym.sym >= 48) ||
 						event.key.keysym.sym == 46 ||
 						(event.key.keysym.sym <= 90 && event.key.keysym.sym >= 65) ||
 						(event.key.keysym.sym <= 122 && event.key.keysym.sym >= 97)) {
@@ -184,8 +186,8 @@ IPaddress GetAddress(SDL_Surface * screen, SDLFont * font) {
 					str[len]=58;
 					len++;
 				}
-				else if (event.key.keysym.sym == SDLK_BACKSPACE) { 
-					len--; 
+				else if (event.key.keysym.sym == SDLK_BACKSPACE) {
+					len--;
 					str[len]=0;
 				}
 				if (len>=100) len=100;
@@ -193,7 +195,7 @@ IPaddress GetAddress(SDL_Surface * screen, SDLFont * font) {
 					InitBackground(screen);
 					drawString(screen,font,60,10,"Enter Host Address:Port");
 					drawString(screen,font,90,60,str);
-					SDL_Flip(screen);
+					PresentScreen(game);
 				}
 			}
 		}
@@ -209,23 +211,25 @@ IPaddress GetAddress(SDL_Surface * screen, SDLFont * font) {
 	while (str[i] <= 57 && str[i] >= 48) {
 		port = 10*port 	+ str[i]-48;
 		i++;
-	} 
+	}
 	if (port > 65535) port = 65535;
 	if (!SDLNet_ResolveHost(&ip, host, port)) return ip;
 	else {
 		SDLNet_ResolveHost(&ip, NULL, 1111);
-		return ip;		
+		return ip;
 	}
 }
 
-int GetPort(SDL_Surface * screen, SDLFont * font, int server) {
+int GetPort(Game *game, int server) {
+	SDL_Surface *screen = game->GetScreen();
+	SDLFont *font = game->GetFont();
 	int done=0;
 	int old=0,port=0;
 	char str[12];
 	InitBackground(screen);
 	if (!server) drawString(screen,font,60,10,"Enter Your Port (0 for random):");
 	else drawString(screen,font,60,10,"Enter Your Port:");
-	SDL_Flip(screen);
+	PresentScreen(game);
 	while (!done) {
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
@@ -234,12 +238,12 @@ int GetPort(SDL_Surface * screen, SDLFont * font, int server) {
 				old=port;
 				if (event.key.keysym.sym == SDLK_ESCAPE) { return -1; }
 				else if (event.key.keysym.sym == SDLK_RETURN) {
-					if (!server) done=1; 
+					if (!server) done=1;
 					else if (port) done=1;
 					else {
 						InitBackground(screen);
 						drawString(screen,font,60,10,"Not 0 dumbass!");
-						SDL_Flip(screen);
+						PresentScreen(game);
 						SDL_Delay(200);
 					}
 				}
@@ -253,7 +257,7 @@ int GetPort(SDL_Surface * screen, SDLFont * font, int server) {
 					if (!server) drawString(screen,font,60,10,"Enter Your Port (0 for random):");
 					else drawString(screen,font,60,10,"Enter Your Port:");
 					drawString(screen,font,90,60,str);
-					SDL_Flip(screen);
+					PresentScreen(game);
 				}
 			}
 		}

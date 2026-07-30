@@ -13,7 +13,7 @@
 #ifndef __FONT_H__
 #define __FONT_H__
 
-#include <SDL/SDL.h>    // just in case...
+#include <SDL2/SDL.h>    // just in case...
 
 // Structure to hold our font
 struct SDLFont

@@ -2,11 +2,10 @@
 
 int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups, defines def,CSpriteBase * powerup_sprite,Mix_Chunk *puk,Mix_Chunk *pluck, IPaddress address, UDPsocket sock, int channel, int net)
 {
-	SDL_Surface * screen = game->GetScreen();
 	//Game game; // In order to be able to play time after time, game has to
 					// be initialzed every time...
 	if (init) InitGame(game, balls,paddles,powerups,game->GetMode(),game->GetDifficulty(),def);
-	Uint8* keys;
+	const Uint8* keys;
 	//DrawBG(screen,back);
 	//UpdateAI();
 	int gone=0;
@@ -28,7 +27,8 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 			printf("SDLNet_AllocPacket: %s\n", SDLNet_GetError());
 		}
 	}
-	SDL_GetMouseState(&mx, &my);
+	{ int wx, wy; SDL_GetMouseState(&wx, &wy); WindowToGameCoords(game, wx, wy, &mx, &my); }
+	myold = my;
 	while (!done)
 	{
 		SDL_Event event;
@@ -51,7 +51,9 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 				}
 				if (event.key.keysym.sym == SDLK_RETURN &&
 				    (event.key.keysym.mod & KMOD_ALT)) {
-					SDL_WM_ToggleFullScreen(game->GetScreen());
+					Uint32 wflags = SDL_GetWindowFlags(game->GetWindow());
+					SDL_SetWindowFullscreen(game->GetWindow(),
+					    (wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
 				}
 			}
 		}
@@ -59,8 +61,8 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 		if (!game->GetEnd())
 		{
 			ResetRectList(game);
-			keys = SDL_GetKeyState(NULL);
-			SDL_GetMouseState(&mx, &my);
+			keys = SDL_GetKeyboardState(NULL);
+			{ int wx, wy; SDL_GetMouseState(&wx, &wy); WindowToGameCoords(game, wx, wy, &mx, &my); }
 			mspeed = my - myold;
 			myold = my;
 			for (int i = 0; i < def.GetMaxPaddles(); i++)
@@ -78,9 +80,9 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 					else if (paddles[i].GetControl() == Keyboard)
 					{
 						if (game->GetMode() == 1) {
-							if (keys[SDLK_UP])
+							if (keys[SDL_SCANCODE_UP])
 								paddles[i].SetVelocity(0,paddles[i].GetVelocity().y-2);
-							else if (keys[SDLK_DOWN])
+							else if (keys[SDL_SCANCODE_DOWN])
 								paddles[i].SetVelocity(0,paddles[i].GetVelocity().y+2);
 							else paddles[i].SetVelocity(0,0);
 							if (paddles[i].GetVelocity().y > 12)
@@ -89,9 +91,9 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 								paddles[i].SetVelocity(0,-12);
 						}
 						else if (game->GetMode() == 2) {
-							if (keys[SDLK_RIGHT])
+							if (keys[SDL_SCANCODE_RIGHT])
 								paddles[i].SetVelocity(paddles[i].GetVelocity().y+5,0);
-							else if (keys[SDLK_LEFT])
+							else if (keys[SDL_SCANCODE_LEFT])
 								paddles[i].SetVelocity(paddles[i].GetVelocity().y-5,0);
 							else paddles[i].SetVelocity(0,0);
 							if (paddles[i].GetVelocity().x > 25)
@@ -131,10 +133,10 @@ int GameMain(Game *game,int init,Ball *balls, Paddle *paddles, Powerup *powerups
 				paddles[0].SetVelocity(0,in->data[1]);
 				if (!in->data[2]) paddles[0].SetVelocity(0,-in->data[1]);
 			}
-			if (keys[SDLK_SPACE] && !game->GetBegin() && net < 2) {
+			if (keys[SDL_SCANCODE_SPACE] && !game->GetBegin() && net < 2) {
 				game->SetBegin(true);
 				InitBackground(game->GetScreen());
-				SDL_Flip(screen);
+				PresentScreen(game);
 			}
 
 			else if (game->GetBegin())
@@ -181,7 +183,7 @@ void InitGame(Game * game, Ball *balls, Paddle *paddles, Powerup *powerups,int m
 	InitPowerups(powerups,mode,def);
 	InitBackground(game->GetScreen());
 	drawString(game->GetScreen(),font,450-stringWidth(font,"Press space to begin"),200-30,"Press space to begin");
-	SDL_Flip(game->GetScreen());
+	PresentScreen(game);
 }
 
 int ReachLimit(Game *game, Paddle *paddles)
@@ -204,7 +206,7 @@ void ResetGame(Game * game, Ball *balls, Paddle *paddles, Powerup *powerups, int
 	ResetPowerups(powerups,mode,def);
 	InitBackground(game->GetScreen());
 	drawString(screen,font,450-stringWidth(font,"Press space to begin"),200-30,"Press space to begin");
-	SDL_Flip(screen);
+	PresentScreen(game);
 }
 
 int CheckState(Game *game, Ball *balls, Paddle *paddles, defines def)
@@ -234,7 +236,7 @@ int CheckState(Game *game, Ball *balls, Paddle *paddles, defines def)
 					pos = (def.GetWindowWidth() - pos)/2;
 					drawString(screen,font,pos,def.GetWindowHeight()/2-60,"Moshe shuts the fuck up");
 				}
-				SDL_Flip(screen);
+				PresentScreen(game);
 
 				SDL_Delay(1000);
 				game->SetEnd(true);

@@ -2,8 +2,8 @@
 #define __GAME_H__
 
 #include "net.h"
-#include <SDL/SDL.h>
-#include "SDL_mixer.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include "defs.h"
 #include "draw.h"
 #include "physics.h"

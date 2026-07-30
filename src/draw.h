@@ -11,5 +11,7 @@ void DrawBG(SDL_Surface *screen, SDL_Surface *back);
 void ResetRectList(Game * game);
 void AddRectList(Game * game, SDL_Rect rect);
 void InitBackground(SDL_Surface * screen);
+void PresentScreen(Game *game);
+void WindowToGameCoords(Game *game, int wx, int wy, int *gx, int *gy);
 
 #endif

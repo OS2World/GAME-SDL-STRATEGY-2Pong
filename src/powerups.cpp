@@ -28,13 +28,13 @@ void UpdatePowerups(Game * game, Powerup *powerups,Ball *balls, Paddle *paddles 
 	for (int i = 0; i < def.GetMaxPowerups(); i++) {
 		if (powerups[i].GetState()) {
 			if ( (time - powerups[i].GetStartTime()) > powerups[i].GetTime()) {
-				KillPowerup(&powerups[i], game->GetScreen());
+				KillPowerup(&powerups[i], game);
 			}
 			else {
 				AddRectList(game, powerups[i].GetSDLRect());
 				for (int j = 0; j < def.GetMaxBalls(); j++) {
 					if ( RectIntersect(balls[j].GetRect(),powerups[i].GetRect()) && balls[j].GetReal()) {
-						ActivatePowerUp(&balls[j],&balls[0],&powerups[i],def, game->GetScreen());
+						ActivatePowerUp(&balls[j],&balls[0],&powerups[i],def, game);
 						paddles[0].SetUpdate(1);
 						ResetPowerups(powerups, 1, def);
 					}
@@ -48,7 +48,7 @@ void UpdatePowerups(Game * game, Powerup *powerups,Ball *balls, Paddle *paddles 
 
 }
 
-void ActivatePowerUp(Ball *ball, Ball *fakeball, Powerup *powerup,defines def, SDL_Surface * screen) {
+void ActivatePowerUp(Ball *ball, Ball *fakeball, Powerup *powerup, defines def, Game *game) {
 	switch(powerup->GetState())
 	{
 		case DoubleSpeed:
@@ -71,7 +71,7 @@ void ActivatePowerUp(Ball *ball, Ball *fakeball, Powerup *powerup,defines def, S
 			break;
 		default: printf("Vini Vidi Vici!\n");
 	}
-	KillPowerup(powerup, screen);
+	KillPowerup(powerup, game);
 }
 
 void WakePowerup(Powerup *powerup, defines def, SDL_Surface * screen, CSpriteBase * powerup_sprite)
@@ -83,11 +83,12 @@ void WakePowerup(Powerup *powerup, defines def, SDL_Surface * screen, CSpriteBas
 	powerup->set(rand()%240*2+60,rand()%150*2+60);
 }
 
-void KillPowerup(Powerup *powerup, SDL_Surface * screen)
+void KillPowerup(Powerup *powerup, Game *game)
 {
+	SDL_Surface *screen = game->GetScreen();
 	SDL_Rect rect = powerup->GetSDLRect();
 	SDL_FillRect(screen,&rect,0x000000);
-	SDL_UpdateRects(screen, 1, &rect);
+	SDL_UpdateWindowSurfaceRects(game->GetWindow(), &rect, 1);
 	powerup->SetState(0);
 	powerup->SetAlive(0);
 }
