@@ -221,6 +221,7 @@ int stringWidth(SDLFont *font,char *str,...)
 // Clear up
 void freeFont(SDLFont *font)
 {
+  if (!font) return;
   delete [] font->widths;
   delete [] font->data;
   SDL_FreeSurface(font->font);

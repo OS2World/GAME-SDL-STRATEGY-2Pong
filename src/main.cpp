@@ -35,19 +35,19 @@ void FreeStuff(SDL_Surface * screen, Ball *balls, Paddle *paddles,  CSpriteBase 
 
 void FirstInitPowerups(Powerup *powerups, defines def, CSpriteBase * powerup_sprite) {
 	/*for (int i = 0; i < def.GetMaxPowerups(); i++) {
-		powerup_sprite[i].init("src/data/powerups");
+		powerup_sprite[i].init("data/powerups");
 	}*/
-	powerup_sprite[0].init("src/data/powerups");
-	powerup_sprite[1].init("src/data/powerups/DoubleSpeed");
-	powerup_sprite[2].init("src/data/powerups/Split");
-	powerup_sprite[3].init("src/data/powerups/HalfSpeed");
-	powerup_sprite[4].init("src/data/powerups/IncSpeed");
-	powerup_sprite[5].init("src/data/powerups/DecSpeed");
-	powerup_sprite[6].init("src/data/powerups/");
+	powerup_sprite[0].init("data/powerups");
+	powerup_sprite[1].init("data/powerups/DoubleSpeed");
+	powerup_sprite[2].init("data/powerups/Split");
+	powerup_sprite[3].init("data/powerups/HalfSpeed");
+	powerup_sprite[4].init("data/powerups/IncSpeed");
+	powerup_sprite[5].init("data/powerups/DecSpeed");
+	powerup_sprite[6].init("data/powerups/");
 }
 
 void FirstInitBalls(Ball *balls, SDL_Surface * screen, defines def) {
-	balll.init("src/data/ball");
+	balll.init("data/ball");
 	for (int i = 0; i < MAX; i++) {
 		balls[i].init(&balll,screen);
 		balls[i].SetSize(def.GetBallSize());
@@ -55,7 +55,7 @@ void FirstInitBalls(Ball *balls, SDL_Surface * screen, defines def) {
 }
 
 void FirstInitPaddles(Paddle *paddles, SDL_Surface * screen, defines def) {
-	paddlee.init("src/data/paddle");
+	paddlee.init("data/paddle");
 	for (int j = 0; j < def.GetMaxPaddles(); j++) {
 		paddles[j].init(&paddlee,screen);
 		paddles[j].SetSize(13,80);
@@ -75,24 +75,32 @@ void FirstInit(Ball *balls, Paddle *paddles, Powerup *powerups, SDL_Surface * sc
 
 int main(int argc, char *argv[])
 {
+	freopen("2pong.log", "w", stdout);
+	freopen("2pong.log", "a", stderr);
 	CSpriteBase powerup_sprite[MAX];
 	Mix_Chunk *puk, *pluck;
 	defines def;
 	srand(time(NULL));
-	if ( SDL_Init(SDL_INIT_AUDIO|SDL_INIT_VIDEO) < 0 )
+	if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
 	{
-		printf("Unable to init SDL: %s\n", SDL_GetError());
-	exit(1);
+		printf("Unable to init SDL video: %s\n", SDL_GetError());
+		exit(1);
 	}
 	atexit(SDL_Quit);
 
-	if(Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 2048) < 0)
-{
-printf("Warning: Couldn't set 44100 Hz 16-bit audio\n- Reason: %s\n",
-							SDL_GetError());
-}
-	puk = Mix_LoadWAV("src/data/sound/puk.wav");
-	pluck = Mix_LoadWAV("src/data/sound/pluck.wav");
+	if ( SDL_InitSubSystem(SDL_INIT_AUDIO) < 0 )
+	{
+		printf("Warning: Audio init failed: %s\n", SDL_GetError());
+		puk = NULL;
+		pluck = NULL;
+	}
+	else
+	{
+		if(Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 2048) < 0)
+			printf("Warning: Couldn't set 44100 Hz 16-bit audio - %s\n", SDL_GetError());
+		puk = Mix_LoadWAV("data/sound/puk.wav");
+		pluck = Mix_LoadWAV("data/sound/pluck.wav");
+	}
 
 	Game game;
 	game.SetLimit(5);
@@ -123,7 +131,11 @@ printf("Warning: Couldn't set 44100 Hz 16-bit audio\n- Reason: %s\n",
 	SDL_ShowCursor(1);
 	//InitFonts()
 	SDLFont * font1;
-	font1 = initFont("src/data/font1");
+	font1 = initFont("data/font1");
+	if (!font1) {
+		printf("Unable to load font (wrong working directory?)\n");
+		exit(1);
+	}
 	game.SetFont(font1);
 	game.SetScreen(screen);
 	//In the future, dynamic limit.
