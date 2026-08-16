@@ -6,9 +6,7 @@ This repository contains the original source code with an OS/2 / ArcaOS port.
 - **Original version:** 1.0a by Kirsh et al.
 - **OS/2 port version:** 1.0.1a by Martin Iturbide
 
-## Screenshot
-
-*(screenshot here)*
+![2Pong ScreenShot](/doc/2Pong.png)
 
 ## Game Modes
 
